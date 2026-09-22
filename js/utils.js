@@ -183,6 +183,72 @@ WE.debounce = (fn, wait) => {
   };
 };
 
+// ---------------------------------------------------------
+// Lembretes
+// ---------------------------------------------------------
+WE.reminderLabel = (minutes) => {
+  const found = (window.WE_REMINDER_OPTIONS || []).find((o) => Number(o.value) === Number(minutes));
+  if (found) return found.label.replace(/ antes$/, "");
+  if (minutes >= 1440) return `${Math.round(minutes / 1440)} dia(s)`;
+  if (minutes >= 60) return `${Math.round(minutes / 60)} hora(s)`;
+  return `${minutes} minuto(s)`;
+};
+
+// ---------------------------------------------------------
+// Push notifications (Web Push via VAPID)
+// ---------------------------------------------------------
+WE.urlBase64ToUint8Array = (base64String) => {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+};
+
+WE.pushSupported = () =>
+  "serviceWorker" in navigator && "PushManager" in window && !!window.WE_VAPID_PUBLIC_KEY;
+
+WE.getPushSubscriptionState = async () => {
+  if (!WE.pushSupported()) return "unsupported";
+  if (Notification.permission === "denied") return "denied";
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = reg && (await reg.pushManager.getSubscription());
+    return sub ? "subscribed" : "not-subscribed";
+  } catch (e) {
+    return "not-subscribed";
+  }
+};
+
+WE.enablePushNotifications = async () => {
+  if (!WE.pushSupported()) throw new Error("Notificações push não são suportadas neste navegador.");
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") throw new Error("Permissão de notificação não concedida.");
+  const reg = await navigator.serviceWorker.register("sw.js");
+  await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: WE.urlBase64ToUint8Array(window.WE_VAPID_PUBLIC_KEY),
+    });
+  }
+  await WE.api.savePushSubscription(sub);
+  return sub;
+};
+
+WE.disablePushNotifications = async () => {
+  if (!WE.pushSupported()) return;
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) return;
+  const sub = await reg.pushManager.getSubscription();
+  if (sub) {
+    await WE.api.deletePushSubscription(sub.endpoint);
+    await sub.unsubscribe();
+  }
+};
+
 WE.friendlyError = (err) => {
   const msg = (err && (err.message || err.error_description)) || "";
   if (/invalid login credentials/i.test(msg)) return "Email ou senha incorretos.";

@@ -160,6 +160,25 @@ WE.api.getMyPendingInvitations = async () => {
   return data;
 };
 
+// Envia o email real do convite via EmailJS (direto do navegador, sem servidor).
+// Se o EmailJS não estiver configurado ainda, não faz nada (o convite já foi
+// criado no banco normalmente; só o email automático fica pendente).
+WE.api.sendInviteEmail = async ({ toEmail, familyName, inviterName, inviteLink }) => {
+  if (!window.WE_EMAILJS_READY || !window.emailjs) return { sent: false, reason: "not-configured" };
+  try {
+    await emailjs.send(window.WE_EMAILJS.SERVICE_ID, window.WE_EMAILJS.TEMPLATE_ID, {
+      to_email: toEmail,
+      family_name: familyName || "sua família",
+      inviter_name: inviterName || "Alguém da família",
+      invite_link: inviteLink,
+    });
+    return { sent: true };
+  } catch (err) {
+    console.error("Falha ao enviar email de convite:", err);
+    return { sent: false, reason: err };
+  }
+};
+
 WE.api.acceptInvitation = async (invitation) => {
   const session = await WE.api.getSession();
   const { error: memErr } = await supa
@@ -337,6 +356,88 @@ WE.api.unreadNotificationCount = async () => {
     .eq("read", false);
   if (error) throw error;
   return count || 0;
+};
+
+// ---------------------------------------------------------
+// LEMBRETES (checagem client-side + notificações in-app)
+// ---------------------------------------------------------
+// Verifica compromissos da família cujo lembrete já "venceu" e ainda não
+// gerou notificação para algum participante. Cria as notificações que
+// faltarem. É seguro chamar isso repetidamente (evita duplicar).
+WE.api.checkDueReminders = async (familyId) => {
+  if (!familyId) return;
+  const now = new Date();
+  const horizon = new Date(now.getTime() + 3 * 24 * 60 * 60000); // até 3 dias no futuro (cobre a maior opção de lembrete)
+  const { data: events, error } = await supa
+    .from("events")
+    .select("id, title, start_datetime, reminder_minutes, status, event_participants(user_id)")
+    .eq("family_id", familyId)
+    .eq("status", "active")
+    .not("reminder_minutes", "is", null)
+    .gte("start_datetime", now.toISOString())
+    .lte("start_datetime", horizon.toISOString());
+  if (error || !events || !events.length) return;
+
+  const dueEvents = events.filter((ev) => {
+    const start = new Date(ev.start_datetime);
+    const reminderAt = new Date(start.getTime() - ev.reminder_minutes * 60000);
+    return now >= reminderAt && now < start;
+  });
+  if (!dueEvents.length) return;
+
+  const eventIds = dueEvents.map((e) => e.id);
+  const { data: existing } = await supa
+    .from("notifications")
+    .select("user_id, event_id")
+    .eq("type", "reminder")
+    .in("event_id", eventIds);
+  const alreadyNotified = new Set((existing || []).map((n) => `${n.event_id}:${n.user_id}`));
+
+  const rows = [];
+  for (const ev of dueEvents) {
+    const minutesLabel = WE.reminderLabel(ev.reminder_minutes);
+    for (const p of ev.event_participants || []) {
+      const key = `${ev.id}:${p.user_id}`;
+      if (alreadyNotified.has(key)) continue;
+      rows.push({
+        user_id: p.user_id,
+        type: "reminder",
+        event_id: ev.id,
+        message: `Lembrete: "${ev.title}" começa em ${minutesLabel}.`,
+      });
+    }
+  }
+  if (rows.length) {
+    await supa.from("notifications").insert(rows);
+    // Dispara também um push real (se o dispositivo tiver assinatura), via Edge Function.
+    try {
+      await supa.functions.invoke(window.WE_PUSH_FUNCTION_NAME || "send-reminder-push", { body: { event_ids: dueEvents.map((e) => e.id) } });
+    } catch (e) {
+      // Se a function não estiver configurada ainda, a notificação in-app já foi criada — sem problema.
+    }
+  }
+};
+
+// ---------------------------------------------------------
+// PUSH SUBSCRIPTIONS (notificações push reais no navegador/celular)
+// ---------------------------------------------------------
+WE.api.savePushSubscription = async (sub) => {
+  const session = await WE.api.getSession();
+  const json = sub.toJSON ? sub.toJSON() : sub;
+  const { error } = await supa.from("push_subscriptions").upsert(
+    {
+      user_id: session.user.id,
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth,
+    },
+    { onConflict: "endpoint" }
+  );
+  if (error) throw error;
+};
+
+WE.api.deletePushSubscription = async (endpoint) => {
+  await supa.from("push_subscriptions").delete().eq("endpoint", endpoint);
 };
 
 // ---------------------------------------------------------

@@ -207,10 +207,27 @@ WE.views.inviteFamily = (params) => {
     }
     WE.loadingBtn(e.target, true, "Enviando...");
     try {
+      let anyEmailSent = false;
+      let anyEmailFailed = false;
       for (const em of emails) {
-        await WE.api.createInvitation(WE.state.family.id, em);
+        const invitation = await WE.api.createInvitation(WE.state.family.id, em);
+        const inviteLink = `${location.origin}${location.pathname}#/convite?token=${invitation.token}`;
+        const result = await WE.api.sendInviteEmail({
+          toEmail: em,
+          familyName: WE.state.family?.name,
+          inviterName: WE.state.profile?.name,
+          inviteLink,
+        });
+        if (result.sent) anyEmailSent = true;
+        else anyEmailFailed = true;
       }
-      WE.toast("Convites enviados! Compartilhe o link de acesso do We. com sua família.", "success");
+      if (anyEmailSent && !anyEmailFailed) {
+        WE.toast("Convite enviado por email!", "success");
+      } else if (anyEmailFailed) {
+        WE.toast("Convite criado, mas não foi possível enviar o email agora. Compartilhe o link do We. diretamente.", "info");
+      } else {
+        WE.toast("Convite criado! Compartilhe o link de acesso do We. com sua família.", "success");
+      }
       WE.navigate("#/hoje");
     } catch (err) {
       errEl.textContent = WE.friendlyError(err);

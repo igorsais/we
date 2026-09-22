@@ -77,3 +77,37 @@ window.WE_ROLE_COLORS = {
 
 // Idade mínima (em anos) para um participante precisar confirmar presença.
 window.WE_CHILD_CONFIRMATION_AGE = 12;
+
+// ---------------------------------------------------------
+// Lembretes de compromisso (em minutos antes do início; null = sem lembrete)
+// ---------------------------------------------------------
+window.WE_REMINDER_OPTIONS = [
+  { value: "", label: "Sem lembrete" },
+  { value: "10", label: "10 minutos antes" },
+  { value: "30", label: "30 minutos antes" },
+  { value: "60", label: "1 hora antes" },
+  { value: "180", label: "3 horas antes" },
+  { value: "1440", label: "1 dia antes" },
+  { value: "2880", label: "2 dias antes" },
+];
+
+// Chave pública VAPID — usada só para o navegador se inscrever no push.
+// A chave privada correspondente vive apenas na function do Supabase (nunca aqui).
+window.WE_VAPID_PUBLIC_KEY = "BNXoyxn2SdwAC-uXNLVIJxgwD24Cvo6WVx0PaA03e0DRBlz65eGS9yFcEbTGmebnWZNVUuSgTFGUVGCIESLFYzc";
+
+// Nome (slug) da Edge Function que envia o push real dos lembretes.
+// Se você renomear/recriar a function no Supabase com outro nome, troque aqui.
+window.WE_PUSH_FUNCTION_NAME = "send-reminder-push";
+
+// ---------------------------------------------------------
+// EmailJS — envio do email de convite direto do navegador (grátis).
+// Preencha os 3 valores após criar sua conta em https://www.emailjs.com
+// (veja o guia CONFIGURACAO_CONVITES.md). Enquanto estiverem vazios, o
+// convite continua sendo criado normalmente, só o email não é enviado.
+// ---------------------------------------------------------
+window.WE_EMAILJS = {
+  PUBLIC_KEY: "",
+  SERVICE_ID: "",
+  TEMPLATE_ID: "",
+};
+window.WE_EMAILJS_READY = !!(window.WE_EMAILJS.PUBLIC_KEY && window.WE_EMAILJS.SERVICE_ID && window.WE_EMAILJS.TEMPLATE_ID);

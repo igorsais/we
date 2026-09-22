@@ -47,6 +47,14 @@ WE.views.openEventForm = async (existingEvent) => {
           <select name="category">${categoryOptionsHtml(existingEvent?.category || "familia")}</select>
         </label>
 
+        <label>Lembrete
+          <select name="reminder_minutes">
+            ${WE_REMINDER_OPTIONS.map(
+              (o) => `<option value="${o.value}" ${String(existingEvent?.reminder_minutes ?? "") === o.value ? "selected" : ""}>${o.label}</option>`
+            ).join("")}
+          </select>
+        </label>
+
         <div class="we-form-row">
           <label>Data
             <input type="date" name="date" required value="${toLocalInputDate(start)}"/>
@@ -289,6 +297,7 @@ WE.views.openEventForm = async (existingEvent) => {
       latitude: selectedLatLon?.lat ?? existingEvent?.latitude ?? null,
       longitude: selectedLatLon?.lon ?? existingEvent?.longitude ?? null,
       notes: fd.get("notes")?.trim() || null,
+      reminder_minutes: fd.get("reminder_minutes") ? Number(fd.get("reminder_minutes")) : null,
     };
 
     const btn = WE.el("#event-form-submit");
@@ -346,6 +355,7 @@ WE.views.openEventDetails = async (eventId) => {
       <div class="we-detail-row">📅 ${WE.fmtDateLong(start)}</div>
       <div class="we-detail-row">🕒 ${ev.all_day ? "Dia inteiro" : `${WE.fmtTime(start)} — ${WE.fmtTime(end)}`}</div>
       ${ev.location ? `<div class="we-detail-row">📍 ${WE.escapeHtml(ev.location)} ${ev.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${ev.latitude},${ev.longitude}" target="_blank" rel="noopener" class="we-link-more">Abrir no mapa</a>` : ""}</div>` : ""}
+      ${ev.reminder_minutes ? `<div class="we-detail-row">${WE.icon("bell", "we-icon-inline")} Lembrete: ${WE_REMINDER_OPTIONS.find((o) => Number(o.value) === ev.reminder_minutes)?.label || `${ev.reminder_minutes} min antes`}</div>` : ""}
 
       <div class="we-field-block">
         <p class="we-field-label">Participantes</p>

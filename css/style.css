@@ -37,6 +37,7 @@ input, select, textarea { font-family: inherit; }
 /* ---------------- Ícones + logo ---------------- */
 .we-icon { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
 .we-icon svg { width: 1em; height: 1em; }
+.we-icon-inline { font-size: 15px; margin-right: 4px; color: var(--pink, #E94B9B); vertical-align: -2px; }
 .we-logo-img { display: block; height: 34px; width: auto; }
 .we-logo-img-sm { height: 26px; }
 .we-logo-img-lg { height: 56px; margin: 0 auto; }

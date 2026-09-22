@@ -1,0 +1,14 @@
+{
+  "name": "We. Agenda Família",
+  "short_name": "We.",
+  "description": "A agenda compartilhada da sua família.",
+  "start_url": "./#/hoje",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF9FC",
+  "theme_color": "#4C1448",
+  "icons": [
+    { "src": "assets/favicon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

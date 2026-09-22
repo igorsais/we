@@ -163,6 +163,7 @@ WE.router = async () => {
 
   WE.requireAuthShell();
   WE.setActiveNav(path);
+  WE.startReminderLoop();
 
   const content = WE.el("#we-content");
   try {
@@ -187,3 +188,17 @@ WE.router = async () => {
 };
 
 window.addEventListener("hashchange", WE.router);
+
+// ---------------------------------------------------------
+// Lembretes: checa periodicamente (e ao carregar) compromissos
+// próximos e gera notificações in-app para todos os envolvidos.
+// ---------------------------------------------------------
+WE.startReminderLoop = () => {
+  if (WE._reminderLoopStarted || !WE.state.family) return;
+  WE._reminderLoopStarted = true;
+  const run = () => {
+    WE.api.checkDueReminders(WE.state.family?.id).then(() => WE.refreshNotifDot()).catch(() => {});
+  };
+  run();
+  setInterval(run, 60000);
+};

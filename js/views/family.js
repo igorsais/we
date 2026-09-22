@@ -60,9 +60,25 @@ WE.views.familyPage = async (content) => {
             <p class="we-family-card-name">${WE.escapeHtml(inv.invited_email)}</p>
           </div>
           <span class="we-status we-status-pending">⏳ Convite pendente</span>
+          <button type="button" class="we-btn we-btn-ghost we-btn-sm" data-resend="${inv.id}" data-email="${WE.escapeHtml(inv.invited_email)}" data-token="${inv.token}">Reenviar email</button>
         </div>`
         )
         .join("");
+      WE.els("[data-resend]", box).forEach((btn) =>
+        btn.addEventListener("click", async () => {
+          WE.loadingBtn(btn, true, "Enviando...");
+          const inviteLink = `${location.origin}${location.pathname}#/convite?token=${btn.dataset.token}`;
+          const result = await WE.api.sendInviteEmail({
+            toEmail: btn.dataset.email,
+            familyName: WE.state.family?.name,
+            inviterName: WE.state.profile?.name,
+            inviteLink,
+          });
+          WE.loadingBtn(btn, false);
+          if (result.sent) WE.toast("Email reenviado!", "success");
+          else WE.toast("Não foi possível enviar o email agora. Verifique a configuração do EmailJS.", "error");
+        })
+      );
     }
   } catch (e) {
     WE.el("#family-invites-list").innerHTML = "";

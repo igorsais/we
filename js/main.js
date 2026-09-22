@@ -19,6 +19,10 @@
     return;
   }
 
+  if (window.WE_EMAILJS_READY && window.emailjs) {
+    emailjs.init({ publicKey: window.WE_EMAILJS.PUBLIC_KEY });
+  }
+
   supa.auth.onAuthStateChange((event) => {
     if (event === "SIGNED_OUT") {
       WE.state.profile = null;

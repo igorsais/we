@@ -53,6 +53,13 @@ WE.views.profilePage = async (content) => {
         </form>
         <button class="we-btn we-btn-danger-outline" id="signout-btn" style="margin-top:12px">Sair da conta</button>
       </div>
+
+      <div class="we-card">
+        <h3>${WE.icon("bell", "we-icon-inline")} Notificações push</h3>
+        <p class="we-muted we-small">Receba um aviso no seu celular ou computador quando um compromisso estiver próximo — mesmo com o We. fechado.</p>
+        <p id="push-status" class="we-muted we-small"></p>
+        <button class="we-btn we-btn-secondary" id="push-toggle-btn">Ativar notificações push</button>
+      </div>
     </div>
   `;
 
@@ -127,7 +134,58 @@ WE.views.profilePage = async (content) => {
     WE.state.family = null;
     WE.navigate("#/");
   });
+
+  await refreshPushUi();
 };
+
+async function refreshPushUi() {
+  const statusEl = WE.el("#push-status");
+  const btn = WE.el("#push-toggle-btn");
+  if (!statusEl || !btn) return;
+  if (!WE.pushSupported()) {
+    statusEl.textContent = "Este navegador não é compatível com notificações push. No iPhone, adicione o We. à Tela de Início (compartilhar → Adicionar à Tela de Início) e abra por lá.";
+    btn.hidden = true;
+    return;
+  }
+  const state = await WE.getPushSubscriptionState();
+  if (state === "denied") {
+    statusEl.textContent = "As notificações foram bloqueadas neste navegador. Habilite-as nas configurações do site para ativar.";
+    btn.hidden = true;
+    return;
+  }
+  btn.hidden = false;
+  if (state === "subscribed") {
+    statusEl.textContent = "Notificações push ativadas neste dispositivo.";
+    btn.textContent = "Desativar notificações push";
+    btn.onclick = async () => {
+      WE.loadingBtn(btn, true, "Desativando...");
+      try {
+        await WE.disablePushNotifications();
+        WE.toast("Notificações push desativadas.", "success");
+      } catch (e) {
+        WE.toast(WE.friendlyError(e), "error");
+      } finally {
+        WE.loadingBtn(btn, false);
+        refreshPushUi();
+      }
+    };
+  } else {
+    statusEl.textContent = "Notificações push desativadas neste dispositivo.";
+    btn.textContent = "Ativar notificações push";
+    btn.onclick = async () => {
+      WE.loadingBtn(btn, true, "Ativando...");
+      try {
+        await WE.enablePushNotifications();
+        WE.toast("Notificações push ativadas!", "success");
+      } catch (e) {
+        WE.toast(WE.friendlyError(e), "error");
+      } finally {
+        WE.loadingBtn(btn, false);
+        refreshPushUi();
+      }
+    };
+  }
+}
 
 // ---------------------------------------------------------
 // Notificações
@@ -196,6 +254,7 @@ function notifIcon(type) {
       participant_accepted: "✅",
       participant_declined: "❌",
       invite: "✉️",
+      reminder: "⏰",
     }[type] || "🔔"
   );
 }
