@@ -55,3 +55,25 @@ window.WE_PARTICIPANT_ROLES = [
 ];
 
 window.WE_AVATAR_PALETTE = ["#4C1448", "#7B1972", "#E94B9B", "#F47DB5", "#5AA9F5", "#A15FA0"];
+
+// ---------------------------------------------------------
+// Cor de avatar por relação familiar (baseado no manual da marca We.)
+// ---------------------------------------------------------
+window.WE_ROLE_COLORS = {
+  "Pai": "#4C1448",
+  "Mãe": "#E94B9B",
+  "Filho": "#5AA9F5",
+  "Filha": "#7B1972",
+  "Irmão": "#5AA9F5",
+  "Irmã": "#7B1972",
+  "Tio": "#7B1972",
+  "Tia": "#5AA9F5",
+  "Avô": "#4C1448",
+  "Avó": "#F47DB5",
+  "Primo": "#7B1972",
+  "Prima": "#5AA9F5",
+  "Outro": "#4C1448",
+};
+
+// Idade mínima (em anos) para um participante precisar confirmar presença.
+window.WE_CHILD_CONFIRMATION_AGE = 12;

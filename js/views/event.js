@@ -27,13 +27,16 @@ WE.views.openEventForm = async (existingEvent) => {
   const selectedParticipants = new Map(
     (existingEvent?.event_participants || []).map((p) => [p.profiles.id, p.role])
   );
+  const priorStatus = new Map(
+    (existingEvent?.event_participants || []).map((p) => [p.profiles.id, { response_status: p.response_status, responded_at: p.responded_at }])
+  );
   if (!isEdit) selectedParticipants.set(meId, "responsavel");
 
   const html = `
     <form id="event-form" class="we-event-form">
       <div class="we-modal-head">
         <h3>${isEdit ? "Editar compromisso" : "Adicionar compromisso"}</h3>
-        <button type="button" class="we-icon-btn" id="event-form-close">✕</button>
+        <button type="button" class="we-icon-btn" id="event-form-close">${WE.icon("close")}</button>
       </div>
       <div class="we-modal-body">
         <label>Título
@@ -179,10 +182,29 @@ WE.views.openEventForm = async (existingEvent) => {
   function getSelectedParticipants() {
     return WE.els(".participant-check")
       .filter((c) => c.checked)
-      .map((c) => ({
-        userId: c.dataset.userId,
-        role: WE.el(`.participant-role-select[data-user-id="${c.dataset.userId}"]`).value,
-      }));
+      .map((c) => {
+        const userId = c.dataset.userId;
+        const member = members.find((m) => m.profiles.id === userId);
+        const isCreatorRow = userId === meId;
+        const isChildRow = member ? WE.isChildParticipant(member.profiles) : false;
+        const autoConfirmed = isCreatorRow || isChildRow;
+        const prior = priorStatus.get(userId);
+        let response_status = "pending";
+        let responded_at = null;
+        if (autoConfirmed) {
+          response_status = "accepted";
+          responded_at = prior?.responded_at || new Date().toISOString();
+        } else if (prior) {
+          response_status = prior.response_status;
+          responded_at = prior.responded_at;
+        }
+        return {
+          userId,
+          role: WE.el(`.participant-role-select[data-user-id="${userId}"]`).value,
+          response_status,
+          responded_at,
+        };
+      });
   }
 
   const scheduleConflictCheck = WE.debounce(async () => {
@@ -308,13 +330,15 @@ WE.views.openEventDetails = async (eventId) => {
   const cat = WE_CATEGORIES[ev.category] || WE_CATEGORIES.outros;
   const start = new Date(ev.start_datetime);
   const end = new Date(ev.end_datetime);
-  const canManage = ev.created_by === meId || WE.state.family?.myRole === "admin";
+  const isCreator = ev.created_by === meId;
+  const canCancel = isCreator || WE.state.family?.myRole === "admin";
   const myParticipant = (ev.event_participants || []).find((p) => p.profiles?.id === meId);
+  const iAmExemptFromConfirming = isCreator || (myParticipant && WE.isChildParticipant(myParticipant.profiles));
 
   const html = `
     <div class="we-modal-head">
       <h3>${WE.escapeHtml(ev.title)}</h3>
-      <button type="button" class="we-icon-btn" id="details-close">✕</button>
+      <button type="button" class="we-icon-btn" id="details-close">${WE.icon("close")}</button>
     </div>
     <div class="we-modal-body">
       ${ev.status === "cancelled" ? `<p class="we-status we-status-declined">Este compromisso foi cancelado.</p>` : ""}
@@ -330,15 +354,14 @@ WE.views.openEventDetails = async (eventId) => {
             .map((p) => {
               const prof = p.profiles || {};
               const roleLabel = WE_PARTICIPANT_ROLES.find((r) => r.value === p.role)?.label || p.role;
-              const statusIcon = p.response_status === "accepted" ? "✓" : p.response_status === "declined" ? "✕" : "⏳";
-              const statusClass = p.response_status === "accepted" ? "we-status-ok" : p.response_status === "declined" ? "we-status-declined" : "we-status-pending";
+              const meta = WE.participantStatusMeta(p, ev.created_by);
               return `<div class="we-detail-participant">
                 ${WE.avatarHtml(prof, 32)}
                 <div>
                   <p>${WE.escapeHtml(prof.name)}${prof.id === meId ? " (você)" : ""}</p>
-                  <p class="we-muted we-small">${roleLabel}</p>
+                  <p class="we-muted we-small">${roleLabel}${WE.isChildParticipant(prof) ? " · criança" : ""}</p>
                 </div>
-                <span class="we-status ${statusClass}">${statusIcon}</span>
+                <span class="we-status ${meta.cls}" title="${WE.escapeHtml(prof.id === meId ? meta.text : meta.textOther)}">${meta.icon}</span>
               </div>`;
             })
             .join("")}
@@ -349,14 +372,12 @@ WE.views.openEventDetails = async (eventId) => {
       <p class="we-form-error" id="details-error" hidden></p>
     </div>
     <div class="we-modal-foot we-modal-foot-wrap">
-      ${myParticipant && myParticipant.response_status === "pending" && ev.status === "active" ? `
+      ${myParticipant && !iAmExemptFromConfirming && myParticipant.response_status === "pending" && ev.status === "active" ? `
         <button class="we-btn we-btn-primary" id="accept-btn">✓ Confirmar presença</button>
         <button class="we-btn we-btn-danger-outline" id="decline-btn">✕ Recusar</button>
       ` : ""}
-      ${canManage && ev.status === "active" ? `
-        <button class="we-btn we-btn-ghost" id="edit-btn">Editar</button>
-        <button class="we-btn we-btn-danger-outline" id="cancel-btn">Cancelar compromisso</button>
-      ` : ""}
+      ${isCreator && ev.status === "active" ? `<button class="we-btn we-btn-ghost" id="edit-btn">Editar</button>` : ""}
+      ${canCancel && ev.status === "active" ? `<button class="we-btn we-btn-danger-outline" id="cancel-btn">Cancelar compromisso</button>` : ""}
       <button class="we-btn we-btn-secondary" id="details-close-2">Fechar</button>
     </div>
   `;

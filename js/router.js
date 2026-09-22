@@ -23,20 +23,20 @@ WE.requireAuthShell = () => {
   app.innerHTML = `
     <div class="we-shell">
       <nav class="we-sidebar">
-        <div class="we-sidebar-logo">We<span class="dot">.</span></div>
-        <a href="#/hoje" class="we-nav-link" data-route="#/hoje">🏠 <span>Hoje</span></a>
-        <a href="#/agenda" class="we-nav-link" data-route="#/agenda">📅 <span>Agenda</span></a>
-        <a href="#/novo" class="we-nav-link we-nav-cta" data-route="#/novo">➕ <span>Adicionar compromisso</span></a>
-        <a href="#/familia" class="we-nav-link" data-route="#/familia">👨‍👩‍👧 <span>Família</span></a>
-        <a href="#/perfil" class="we-nav-link" data-route="#/perfil">👤 <span>Perfil</span></a>
-        <button class="we-nav-link we-nav-logout" id="btn-logout">🚪 <span>Sair</span></button>
+        <div class="we-sidebar-logo"><img src="assets/logo.png" alt="We." class="we-logo-img"/></div>
+        <a href="#/hoje" class="we-nav-link" data-route="#/hoje">${WE.icon("home")} <span>Hoje</span></a>
+        <a href="#/agenda" class="we-nav-link" data-route="#/agenda">${WE.icon("calendar")} <span>Agenda</span></a>
+        <a href="#/novo" class="we-nav-link we-nav-cta" data-route="#/novo">${WE.icon("plus")} <span>Adicionar compromisso</span></a>
+        <a href="#/familia" class="we-nav-link" data-route="#/familia">${WE.icon("family")} <span>Família</span></a>
+        <a href="#/perfil" class="we-nav-link" data-route="#/perfil">${WE.icon("user")} <span>Perfil</span></a>
+        <button class="we-nav-link we-nav-logout" id="btn-logout">${WE.icon("logout")} <span>Sair</span></button>
       </nav>
       <div class="we-main">
         <header class="we-topbar">
-          <div class="we-topbar-logo">We<span class="dot">.</span></div>
+          <div class="we-topbar-logo"><img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-sm"/></div>
           <div class="we-topbar-right">
             <button class="we-icon-btn" id="btn-notifications" aria-label="Notificações">
-              🔔<span class="we-badge-dot" id="notif-dot" hidden></span>
+              ${WE.icon("bell")}<span class="we-badge-dot" id="notif-dot" hidden></span>
             </button>
             <div class="we-topbar-user" id="topbar-user"></div>
           </div>
@@ -44,11 +44,11 @@ WE.requireAuthShell = () => {
         <main class="we-content" id="we-content"></main>
       </div>
       <nav class="we-bottomnav">
-        <a href="#/hoje" data-route="#/hoje"><span>🏠</span>Hoje</a>
-        <a href="#/agenda" data-route="#/agenda"><span>📅</span>Agenda</a>
-        <a href="#/novo" data-route="#/novo" class="we-bottomnav-cta"><span>➕</span></a>
-        <a href="#/familia" data-route="#/familia"><span>👨‍👩‍👧</span>Família</a>
-        <a href="#/perfil" data-route="#/perfil"><span>👤</span>Perfil</a>
+        <a href="#/hoje" data-route="#/hoje">${WE.icon("home")}Hoje</a>
+        <a href="#/agenda" data-route="#/agenda">${WE.icon("calendar")}Agenda</a>
+        <a href="#/novo" data-route="#/novo" class="we-bottomnav-cta">${WE.icon("plus")}</a>
+        <a href="#/familia" data-route="#/familia">${WE.icon("family")}Família</a>
+        <a href="#/perfil" data-route="#/perfil">${WE.icon("user")}Perfil</a>
       </nav>
     </div>
   `;

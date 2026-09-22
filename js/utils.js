@@ -24,15 +24,78 @@ WE.colorForId = (id) => {
   return WE_AVATAR_PALETTE[Math.abs(hash) % WE_AVATAR_PALETTE.length];
 };
 
+WE.roleColor = (profile) => {
+  const role = profile?.family_role;
+  if (role && WE_ROLE_COLORS[role]) return WE_ROLE_COLORS[role];
+  return null;
+};
+
 WE.avatarHtml = (profile, size) => {
   size = size || 36;
   const style = `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px`;
   if (profile?.avatar_url) {
     return `<img src="${profile.avatar_url}" alt="${WE.escapeHtml(profile.name)}" class="we-avatar-img" style="${style}"/>`;
   }
-  const color = profile?.avatar_color || WE.colorForId(profile?.id || profile?.name || "?");
+  const color = profile?.avatar_color || WE.roleColor(profile) || WE.colorForId(profile?.id || profile?.name || "?");
   return `<div class="we-avatar" style="${style};background:${color}">${WE.initials(profile?.name)}</div>`;
 };
+
+// ---------------------------------------------------------
+// Idade / confirmação infantil
+// ---------------------------------------------------------
+WE.ageFromBirthdate = (birthDate) => {
+  if (!birthDate) return null;
+  const b = new Date(birthDate);
+  if (isNaN(b)) return null;
+  const now = new Date();
+  let age = now.getFullYear() - b.getFullYear();
+  const monthDiff = now.getMonth() - b.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < b.getDate())) age--;
+  return age;
+};
+
+WE.isChildParticipant = (profile) => {
+  const age = WE.ageFromBirthdate(profile?.birth_date);
+  return age !== null && age < WE_CHILD_CONFIRMATION_AGE;
+};
+
+// Metadados de status de participação para exibir em cards/detalhes.
+// creatorId = id de quem criou o compromisso.
+WE.participantStatusMeta = (participant, creatorId) => {
+  const profile = participant?.profiles || {};
+  if (profile.id === creatorId) {
+    return { icon: "✓", text: "Você criou este compromisso", textOther: `${(profile.name || "").split(" ")[0]} criou este compromisso`, cls: "we-status-ok" };
+  }
+  if (WE.isChildParticipant(profile)) {
+    return { icon: "👶", text: "Participando", textOther: "Participando", cls: "we-status-child" };
+  }
+  if (participant.response_status === "accepted") {
+    return { icon: "✓", text: "Você confirmou", textOther: "Confirmou presença", cls: "we-status-ok" };
+  }
+  if (participant.response_status === "declined") {
+    return { icon: "✕", text: "Você recusou", textOther: "Recusou", cls: "we-status-declined" };
+  }
+  return { icon: "⏳", text: "Aguardando sua confirmação", textOther: "Aguardando confirmação", cls: "we-status-pending" };
+};
+
+// ---------------------------------------------------------
+// Ícones (SVG lineares, cor via currentColor)
+// ---------------------------------------------------------
+WE.ICONS = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  family: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="7.5" r="2.6"/><circle cx="17" cy="8.5" r="2.2"/><path d="M3 20v-1.6c0-2.1 2.5-3.4 5.5-3.4s5.5 1.3 5.5 3.4V20"/><path d="M14 15.2c2.6.1 4.8 1.3 4.8 3.1V20"/></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M4.5 20v-.8c0-2.6 3.4-4.2 7.5-4.2s7.5 1.6 7.5 4.2v.8"/></svg>',
+  logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20H5.5a1.5 1.5 0 0 1-1.5-1.5v-13A1.5 1.5 0 0 1 5.5 4H9"/><path d="M16 16.5 20.5 12 16 7.5"/><path d="M20.5 12H9.5"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10.5a6 6 0 1 1 12 0c0 3 1 4.6 1.6 5.4a1 1 0 0 1-.8 1.6H5.2a1 1 0 0 1-.8-1.6C5 15.1 6 13.5 6 10.5Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>',
+  chevronLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  chevronRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.4"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+};
+WE.icon = (name, cls) => `<span class="we-icon ${cls || ""}">${WE.ICONS[name] || ""}</span>`;
 
 WE.categoryBadge = (cat) => {
   const c = WE_CATEGORIES[cat] || WE_CATEGORIES.outros;
@@ -51,6 +114,7 @@ WE.monthLabel = (d) => `${MONTHS[d.getMonth()]} de ${d.getFullYear()}`;
 WE.sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 WE.startOfWeek = (d) => { const n = new Date(d); n.setDate(n.getDate() - n.getDay()); n.setHours(0, 0, 0, 0); return n; };
 WE.addDays = (d, n) => { const c = new Date(d); c.setDate(c.getDate() + n); return c; };
+WE.toInputDate = (d) => { const pad = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 
 WE.greeting = () => {
   const h = new Date().getHours();

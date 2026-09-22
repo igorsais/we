@@ -7,7 +7,7 @@
     app.innerHTML = `
       <div class="we-auth-screen">
         <div class="we-auth-card we-auth-card-wide">
-          <div class="we-logo-lg we-center">We<span class="dot">.</span></div>
+          <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-lg we-center-img"/>
           <h2 class="we-center">Quase lá!</h2>
           <p class="we-center we-muted">
             O We. precisa se conectar a um banco de dados gratuito (Supabase) para guardar os

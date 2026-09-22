@@ -16,12 +16,11 @@ function participantChipsHtml(participants, meId) {
     .join("");
 }
 
-function statusLabel(participants, meId) {
+function statusLabel(participants, meId, creatorId) {
   const me = participants.find((p) => p.profiles?.id === meId);
   if (!me) return "";
-  if (me.response_status === "accepted") return `<span class="we-status we-status-ok">✓ Você confirmou</span>`;
-  if (me.response_status === "declined") return `<span class="we-status we-status-declined">✕ Você recusou</span>`;
-  return `<span class="we-status we-status-pending">Aguardando sua confirmação</span>`;
+  const meta = WE.participantStatusMeta(me, creatorId);
+  return `<span class="we-status ${meta.cls}">${meta.icon} ${meta.text}</span>`;
 }
 
 function eventCardHtml(ev, meId) {
@@ -38,7 +37,7 @@ function eventCardHtml(ev, meId) {
     <h4 class="we-event-title">${WE.escapeHtml(ev.title)}</h4>
     ${ev.location ? `<p class="we-event-location">📍 ${WE.escapeHtml(ev.location)}</p>` : ""}
     <div class="we-event-participants">${participantChipsHtml(ev.event_participants || [], meId)}</div>
-    <div class="we-event-footer">${statusLabel(ev.event_participants || [], meId)}</div>
+    <div class="we-event-footer">${statusLabel(ev.event_participants || [], meId, ev.created_by)}</div>
   </div>`;
 }
 
@@ -96,11 +95,12 @@ WE.views.dashboard = async (content) => {
         <div class="we-week-day ${WE.sameDay(day, now) ? "is-today" : ""}">
           <div class="we-week-day-head">${WE.weekdayShort(day)} <span>${day.getDate()}</span></div>
           <div class="we-week-day-events">
-            ${dayEvents.length ? dayEvents.map((ev) => `<div class="we-week-event-dot" style="background:${(WE_CATEGORIES[ev.category]||WE_CATEGORIES.outros).color}" title="${WE.escapeHtml(ev.title)}"><span>${WE.fmtTime(new Date(ev.start_datetime))}</span> ${WE.escapeHtml(ev.title)}</div>`).join("") : `<div class="we-week-day-empty">—</div>`}
+            ${dayEvents.length ? dayEvents.map((ev) => `<div class="we-week-event-dot" data-event-id="${ev.id}" style="background:${(WE_CATEGORIES[ev.category]||WE_CATEGORIES.outros).color}" title="${WE.escapeHtml(ev.title)}"><span>${WE.fmtTime(new Date(ev.start_datetime))}</span> ${WE.escapeHtml(ev.title)}</div>`).join("") : `<div class="we-week-day-empty">—</div>`}
           </div>
         </div>`;
       })
       .join("");
+    WE.els(".we-week-event-dot", strip).forEach((dot) => dot.addEventListener("click", () => WE.navigate(`#/evento/${dot.dataset.eventId}`)));
   } catch (e) {
     WE.el("#week-strip").innerHTML = "";
   }

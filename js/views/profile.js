@@ -26,6 +26,9 @@ WE.views.profilePage = async (content) => {
           <label>Telefone
             <input type="tel" name="phone" value="${WE.escapeHtml(p.phone || "")}"/>
           </label>
+          <label>Data de nascimento
+            <input type="date" name="birth_date" value="${WE.escapeHtml(p.birth_date || "")}" max="${WE.toInputDate(new Date())}"/>
+          </label>
           <label>Quem é você na família?
             <select name="family_role" id="edit-family-role">
               ${WE_FAMILY_ROLES.map((r) => `<option value="${r}" ${p.family_role === r ? "selected" : ""}>${r}</option>`).join("")}
@@ -82,6 +85,7 @@ WE.views.profilePage = async (content) => {
       WE.state.profile = await WE.api.upsertProfile({
         name: fd.get("name").trim(),
         phone: fd.get("phone").trim(),
+        birth_date: fd.get("birth_date") || null,
         family_role: fd.get("family_role"),
         family_role_custom: fd.get("family_role") === "Outro" ? fd.get("family_role_custom").trim() : null,
         avatar_url,
@@ -138,7 +142,7 @@ WE.views.openNotifications = async () => {
   const html = `
     <div class="we-modal-head">
       <h3>Notificações</h3>
-      <button type="button" class="we-icon-btn" id="notif-close">✕</button>
+      <button type="button" class="we-icon-btn" id="notif-close">${WE.icon("close")}</button>
     </div>
     <div class="we-modal-body">
       ${notifs.length ? `<button class="we-link-more" id="mark-all-read">Marcar tudo como lido</button>` : ""}

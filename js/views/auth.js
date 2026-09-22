@@ -8,14 +8,14 @@ WE.views.landing = () => {
   app.innerHTML = `
   <div class="we-landing">
     <header class="we-landing-header">
-      <div class="we-logo-lg">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img"/>
       <div class="we-landing-header-actions">
         <a href="#/entrar" class="we-btn we-btn-ghost">Entrar</a>
       </div>
     </header>
 
     <section class="we-hero">
-      <div class="we-logo-xl">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-xl we-center-img"/>
       <p class="we-slogan">Planeje, organize e compartilhe</p>
       <h1>A agenda compartilhada da sua família.</h1>
       <p class="we-hero-text">Organize compromissos, combine horários e mantenha todo mundo na mesma página.</p>
@@ -64,7 +64,7 @@ WE.views.login = () => {
   app.innerHTML = `
   <div class="we-auth-screen">
     <div class="we-auth-card">
-      <div class="we-logo-lg we-center">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-lg we-center-img"/>
       <p class="we-slogan we-center">Planeje, organize e compartilhe</p>
       <h2 class="we-center">Que bom te ver de novo</h2>
 
@@ -113,7 +113,7 @@ WE.views.signup = () => {
   app.innerHTML = `
   <div class="we-auth-screen">
     <div class="we-auth-card">
-      <div class="we-logo-lg we-center">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-lg we-center-img"/>
       <p class="we-slogan we-center">Planeje, organize e compartilhe</p>
       <h2 class="we-center">Vamos criar sua conta</h2>
 

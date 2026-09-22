@@ -14,7 +14,7 @@ WE.views.profileSetup = () => {
   app.innerHTML = `
   <div class="we-auth-screen">
     <div class="we-auth-card we-auth-card-wide">
-      <div class="we-logo-lg we-center">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-lg we-center-img"/>
       ${ONBOARD_STEP_HTML(1, 3)}
       <h2 class="we-center">Conte um pouco sobre você</h2>
       <p class="we-center we-muted">Essas informações aparecem para sua família.</p>
@@ -32,6 +32,9 @@ WE.views.profileSetup = () => {
         </label>
         <label>Telefone <span class="we-optional">(opcional)</span>
           <input type="tel" name="phone" value="${WE.escapeHtml(p.phone || "")}" placeholder="(00) 00000-0000"/>
+        </label>
+        <label>Data de nascimento
+          <input type="date" name="birth_date" required value="${WE.escapeHtml(p.birth_date || "")}" max="${WE.toInputDate(new Date())}"/>
         </label>
         <label>Quem é você na família?
           <select name="family_role" id="family-role-select" required>
@@ -79,10 +82,10 @@ WE.views.profileSetup = () => {
       const fields = {
         name: fd.get("name").trim(),
         phone: fd.get("phone").trim(),
+        birth_date: fd.get("birth_date") || null,
         family_role: fd.get("family_role"),
         family_role_custom: fd.get("family_role") === "Outro" ? fd.get("family_role_custom").trim() : null,
         avatar_url,
-        avatar_color: WE.colorForId(WE.state.session.user.id),
       };
       WE.state.profile = await WE.api.upsertProfile(fields);
       WE.navigate("#/criar-familia");
@@ -100,7 +103,7 @@ WE.views.familySetup = () => {
   app.innerHTML = `
   <div class="we-auth-screen">
     <div class="we-auth-card">
-      <div class="we-logo-lg we-center">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-lg we-center-img"/>
       ${ONBOARD_STEP_HTML(2, 3)}
       <h2 class="we-center">Vamos criar sua família</h2>
       <p class="we-center we-muted">Escolha um nome para identificar sua família no We.</p>
@@ -141,7 +144,7 @@ WE.views.inviteFamily = (params) => {
   app.innerHTML = `
   <div class="we-auth-screen">
     <div class="we-auth-card we-auth-card-wide">
-      <div class="we-logo-lg we-center">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-lg we-center-img"/>
       ${isFirstTime ? ONBOARD_STEP_HTML(3, 3) : ""}
       <h2 class="we-center">Convide sua família</h2>
       <p class="we-center we-muted">Envie o convite por email. Quem receber poderá criar a conta e entrar direto na família ${WE.escapeHtml(WE.state.family?.name || "")}.</p>
@@ -224,7 +227,7 @@ WE.views.pendingInviteChoice = (invitations) => {
   app.innerHTML = `
   <div class="we-auth-screen">
     <div class="we-auth-card">
-      <div class="we-logo-lg we-center">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-lg we-center-img"/>
       <h2 class="we-center">Você tem um convite!</h2>
       <p class="we-center we-muted">Você foi convidado para a <strong>${WE.escapeHtml(inv.families?.name || "família")}</strong>.</p>
       <div class="we-form-actions we-form-actions-col">
@@ -272,7 +275,7 @@ WE.views.inviteLanding = async (params) => {
   if (!invitation) {
     app.innerHTML = `
     <div class="we-auth-screen"><div class="we-auth-card we-center">
-      <div class="we-logo-lg">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img"/>
       <h2>Convite não encontrado</h2>
       <p class="we-muted">Esse link pode ter expirado. Peça um novo convite para quem te chamou.</p>
       <a href="#/" class="we-btn we-btn-primary">Voltar ao início</a>
@@ -283,7 +286,7 @@ WE.views.inviteLanding = async (params) => {
   app.innerHTML = `
   <div class="we-auth-screen">
     <div class="we-auth-card">
-      <div class="we-logo-lg we-center">We<span class="dot">.</span></div>
+      <img src="assets/logo.png" alt="We." class="we-logo-img we-logo-img-lg we-center-img"/>
       <h2 class="we-center">Você foi convidado!</h2>
       <p class="we-center we-muted">Junte-se à <strong>${WE.escapeHtml(invitation.families?.name || "família")}</strong> no We. — a agenda compartilhada da sua família.</p>
       <div class="we-form-actions we-form-actions-col">

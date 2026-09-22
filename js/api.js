@@ -221,7 +221,13 @@ WE.api.createEvent = async (payload, participants) => {
     .single();
   if (error) throw error;
   if (participants.length) {
-    const rows = participants.map((p) => ({ event_id: ev.id, user_id: p.userId, role: p.role }));
+    const rows = participants.map((p) => ({
+      event_id: ev.id,
+      user_id: p.userId,
+      role: p.role,
+      response_status: p.response_status || "pending",
+      responded_at: p.responded_at || null,
+    }));
     const { error: partErr } = await supa.from("event_participants").insert(rows);
     if (partErr) throw partErr;
   }
@@ -244,7 +250,13 @@ WE.api.updateEvent = async (eventId, payload, participants) => {
   if (participants) {
     await supa.from("event_participants").delete().eq("event_id", eventId);
     if (participants.length) {
-      const rows = participants.map((p) => ({ event_id: eventId, user_id: p.userId, role: p.role }));
+      const rows = participants.map((p) => ({
+        event_id: eventId,
+        user_id: p.userId,
+        role: p.role,
+        response_status: p.response_status || "pending",
+        responded_at: p.responded_at || null,
+      }));
       const { error: partErr } = await supa.from("event_participants").insert(rows);
       if (partErr) throw partErr;
     }
@@ -332,7 +344,7 @@ WE.api.unreadNotificationCount = async () => {
 // ---------------------------------------------------------
 WE.api.searchAddress = async (query) => {
   if (!query || query.trim().length < 3) return [];
-  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=5&accept-language=pt-BR&q=${encodeURIComponent(query)}`;
+  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=6&countrycodes=br&accept-language=pt-BR&q=${encodeURIComponent(query)}`;
   try {
     const res = await fetch(url, { headers: { Accept: "application/json" } });
     if (!res.ok) return [];
