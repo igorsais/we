@@ -108,8 +108,16 @@ WE.views.login = () => {
   });
 };
 
-WE.views.signup = () => {
+WE.views.signup = async () => {
   const app = WE.el("#app");
+  let inviteEmail = "";
+  const inviteToken = localStorage.getItem("we_invite_token");
+  if (inviteToken) {
+    try {
+      const invitation = await WE.api.getInvitationByToken(inviteToken);
+      if (invitation && invitation.status === "pending") inviteEmail = invitation.invited_email || "";
+    } catch (e) {}
+  }
   app.innerHTML = `
   <div class="we-auth-screen">
     <div class="we-auth-card">
@@ -129,8 +137,9 @@ WE.views.signup = () => {
           <input type="text" name="name" required placeholder="Seu nome completo" autocomplete="name"/>
         </label>
         <label>Email
-          <input type="email" name="email" required placeholder="voce@email.com" autocomplete="email"/>
+          <input type="email" name="email" required placeholder="voce@email.com" autocomplete="email" value="${WE.escapeHtml(inviteEmail)}" ${inviteEmail ? "readonly" : ""}/>
         </label>
+        ${inviteEmail ? `<p class="we-muted we-small">Este é o email que recebeu o convite — use-o para já entrar direto na família.</p>` : ""}
         <label>Senha
           <input type="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
         </label>

@@ -99,6 +99,10 @@ window.WE_VAPID_PUBLIC_KEY = "BNXoyxn2SdwAC-uXNLVIJxgwD24Cvo6WVx0PaA03e0DRBlz65e
 // Se você renomear/recriar a function no Supabase com outro nome, troque aqui.
 window.WE_PUSH_FUNCTION_NAME = "send-reminder-push";
 
+// Nome (slug) da Edge Function que exclui a conta do próprio usuário.
+// Se você renomear/recriar a function no Supabase com outro nome, troque aqui.
+window.WE_DELETE_ACCOUNT_FUNCTION_NAME = "delete-account";
+
 // ---------------------------------------------------------
 // EmailJS — envio do email de convite direto do navegador (grátis).
 // Preencha os 3 valores após criar sua conta em https://www.emailjs.com

@@ -7,10 +7,18 @@ WE.api = {};
 // AUTH
 // ---------------------------------------------------------
 WE.api.signUp = async (name, email, password) => {
+  // Se a pessoa chegou aqui por um link de convite, o token foi salvo no
+  // localStorage (ver WE.views.inviteLanding). Levamos ele para dentro do link
+  // de confirmação de email, assim o convite "sobrevive" mesmo que o link de
+  // confirmação seja aberto num app/navegador diferente de onde o cadastro foi
+  // preenchido (ex: abriu o convite no Gmail, mas a confirmação abre no Safari).
+  const inviteToken = localStorage.getItem("we_invite_token");
+  const redirectPath = inviteToken ? `#/convite?token=${inviteToken}` : `#/entrar`;
+  const emailRedirectTo = `${location.origin}${location.pathname}${redirectPath}`;
   const { data, error } = await supa.auth.signUp({
     email,
     password,
-    options: { data: { name } },
+    options: { data: { name }, emailRedirectTo },
   });
   if (error) throw error;
   return data;
@@ -438,6 +446,17 @@ WE.api.savePushSubscription = async (sub) => {
 
 WE.api.deletePushSubscription = async (endpoint) => {
   await supa.from("push_subscriptions").delete().eq("endpoint", endpoint);
+};
+
+// ---------------------------------------------------------
+// EXCLUIR CONTA (via Edge Function — precisa de service role, que o
+// navegador nunca tem acesso direto; a function só apaga a conta de quem
+// está autenticado fazendo a própria chamada, nunca a de outra pessoa).
+// ---------------------------------------------------------
+WE.api.deleteMyAccount = async () => {
+  const { data, error } = await supa.functions.invoke(window.WE_DELETE_ACCOUNT_FUNCTION_NAME || "delete-account");
+  if (error) throw error;
+  return data;
 };
 
 // ---------------------------------------------------------

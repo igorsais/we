@@ -60,6 +60,10 @@ WE.views.profilePage = async (content) => {
         <p id="push-status" class="we-muted we-small"></p>
         <button class="we-btn we-btn-secondary" id="push-toggle-btn">Ativar notificações push</button>
       </div>
+
+      <div class="we-profile-footer">
+        <button type="button" id="delete-account-btn" class="we-link-subtle-danger">Excluir minha conta</button>
+      </div>
     </div>
   `;
 
@@ -133,6 +137,32 @@ WE.views.profilePage = async (content) => {
     WE.state.profile = null;
     WE.state.family = null;
     WE.navigate("#/");
+  });
+
+  WE.el("#delete-account-btn").addEventListener("click", async () => {
+    const meId = WE.state.session?.user?.id;
+    const isOwner = WE.state.family && WE.state.family.owner_id === meId;
+    const otherMembers = (WE.state.members || []).filter((m) => m.profiles?.id !== meId);
+    const warning = isOwner && otherMembers.length
+      ? `Você é quem criou a família "${WE.state.family.name}". Excluir sua conta vai apagar TODA a família — compromissos, membros e convites — para todo mundo. Essa ação não pode ser desfeita.`
+      : "Isso vai excluir sua conta e todos os seus dados do We. permanentemente. Essa ação não pode ser desfeita.";
+    if (!confirm(`${warning}\n\nTem certeza que deseja continuar?`)) return;
+    if (!confirm("Confirmando mais uma vez: excluir sua conta agora?")) return;
+
+    const btn = WE.el("#delete-account-btn");
+    WE.loadingBtn(btn, true, "Excluindo...");
+    try {
+      await WE.api.deleteMyAccount();
+      WE.state.profile = null;
+      WE.state.family = null;
+      WE.state.session = null;
+      await WE.api.signOut();
+      WE.toast("Conta excluída.", "success");
+      WE.navigate("#/");
+    } catch (err) {
+      WE.toast(WE.friendlyError(err), "error");
+      WE.loadingBtn(btn, false);
+    }
   });
 
   await refreshPushUi();
