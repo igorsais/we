@@ -297,6 +297,8 @@ input, select, textarea { font-family: inherit; }
 .we-family-card { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: var(--radius-sm); padding: 14px 16px; box-shadow: var(--shadow-sm); }
 .we-family-card-info { flex: 1; }
 .we-family-card-name { font-weight: 600; margin: 0; }
+.we-family-card-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.we-btn-danger-text { color: var(--danger); }
 
 .we-card { background: #fff; border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-sm); margin-bottom: 18px; }
 .we-profile-card { display: flex; flex-direction: column; align-items: center; gap: 10px; }

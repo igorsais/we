@@ -60,7 +60,10 @@ WE.views.familyPage = async (content) => {
             <p class="we-family-card-name">${WE.escapeHtml(inv.invited_email)}</p>
           </div>
           <span class="we-status we-status-pending">⏳ Convite pendente</span>
-          <button type="button" class="we-btn we-btn-ghost we-btn-sm" data-resend="${inv.id}" data-email="${WE.escapeHtml(inv.invited_email)}" data-token="${inv.token}">Reenviar email</button>
+          <div class="we-family-card-actions">
+            <button type="button" class="we-btn we-btn-ghost we-btn-sm" data-resend="${inv.id}" data-email="${WE.escapeHtml(inv.invited_email)}" data-token="${inv.token}">Reenviar email</button>
+            <button type="button" class="we-btn we-btn-ghost we-btn-sm we-btn-danger-text" data-cancel="${inv.id}">Cancelar</button>
+          </div>
         </div>`
         )
         .join("");
@@ -77,6 +80,20 @@ WE.views.familyPage = async (content) => {
           WE.loadingBtn(btn, false);
           if (result.sent) WE.toast("Email reenviado!", "success");
           else WE.toast("Não foi possível enviar o email agora. Verifique a configuração do EmailJS.", "error");
+        })
+      );
+      WE.els("[data-cancel]", box).forEach((btn) =>
+        btn.addEventListener("click", async () => {
+          if (!confirm("Cancelar este convite? A pessoa não vai mais conseguir entrar na família por esse link.")) return;
+          WE.loadingBtn(btn, true, "Cancelando...");
+          try {
+            await WE.api.cancelInvitation(btn.dataset.cancel);
+            WE.toast("Convite cancelado.", "success");
+            WE.views.familyPage(WE.el("#we-content"));
+          } catch (err) {
+            WE.toast(WE.friendlyError(err), "error");
+            WE.loadingBtn(btn, false);
+          }
         })
       );
     }

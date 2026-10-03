@@ -325,7 +325,13 @@ WE.consumePendingInviteToken = async () => {
       localStorage.removeItem("we_invite_token");
       return invitation;
     }
-  } catch (e) {}
-  localStorage.removeItem("we_invite_token");
-  return null;
+    // Resposta definitiva (convite não existe mais ou já foi usado): não há
+    // por que guardar esse token, já não serve pra nada.
+    localStorage.removeItem("we_invite_token");
+    return null;
+  } catch (e) {
+    // Erro passageiro (rede, etc.) — mantém o token guardado pra tentar de
+    // novo na próxima navegação, em vez de perder o convite de vez.
+    return null;
+  }
 };

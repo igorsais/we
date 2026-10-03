@@ -12,9 +12,18 @@ WE.api.signUp = async (name, email, password) => {
   // de confirmação de email, assim o convite "sobrevive" mesmo que o link de
   // confirmação seja aberto num app/navegador diferente de onde o cadastro foi
   // preenchido (ex: abriu o convite no Gmail, mas a confirmação abre no Safari).
+  //
+  // IMPORTANTE: isso vai na querystring ("?invite_token=..."), nunca depois de
+  // um "#". O próprio Supabase usa "#" para devolver o token de sessão nesse
+  // mesmo link de confirmação (ex: "...#access_token=..."), e uma URL só pode
+  // ter um "#" — se o nosso redirect já tivesse um, os dois se misturavam e o
+  // token do convite chegava corrompido do outro lado (era isso que causava
+  // o "Convite não encontrado" ao confirmar o email). Quem lê esse parâmetro
+  // de volta é o boot() em main.js.
   const inviteToken = localStorage.getItem("we_invite_token");
-  const redirectPath = inviteToken ? `#/convite?token=${inviteToken}` : `#/entrar`;
-  const emailRedirectTo = `${location.origin}${location.pathname}${redirectPath}`;
+  const emailRedirectTo = inviteToken
+    ? `${location.origin}${location.pathname}?invite_token=${encodeURIComponent(inviteToken)}`
+    : `${location.origin}${location.pathname}`;
   const { data, error } = await supa.auth.signUp({
     email,
     password,
@@ -138,6 +147,11 @@ WE.api.createInvitation = async (familyId, email) => {
     .single();
   if (error) throw error;
   return data;
+};
+
+WE.api.cancelInvitation = async (invitationId) => {
+  const { error } = await supa.from("invitations").delete().eq("id", invitationId);
+  if (error) throw error;
 };
 
 WE.api.getFamilyInvitations = async (familyId) => {
