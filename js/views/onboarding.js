@@ -88,7 +88,14 @@ WE.views.profileSetup = () => {
         avatar_url,
       };
       WE.state.profile = await WE.api.upsertProfile(fields);
-      WE.navigate("#/criar-familia");
+      // Importante: navega pra "#/hoje" (não direto pra "#/criar-familia").
+      // É o router (js/router.js) quem decide pra onde ir depois do perfil:
+      // primeiro ele tenta consumir um convite pendente (localStorage ou por
+      // email) e só manda criar uma família nova se não achar nenhum. Pular
+      // direto pra "#/criar-familia" aqui ignorava qualquer convite em
+      // andamento e criava uma família nova mesmo pra quem tinha sido
+      // convidado.
+      WE.navigate("#/hoje");
     } catch (err) {
       errEl.textContent = WE.friendlyError(err);
       errEl.hidden = false;
