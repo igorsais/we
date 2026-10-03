@@ -32,88 +32,118 @@ WE.views.openEventForm = async (existingEvent) => {
   );
   if (!isEdit) selectedParticipants.set(meId, "responsavel");
 
+  const STEP_LABELS = ["O que e quando", "Onde", "Quem vai"];
   const html = `
-    <form id="event-form" class="we-event-form">
+    <form id="event-form" class="we-event-form we-form">
       <div class="we-modal-head">
         <h3>${isEdit ? "Editar compromisso" : "Adicionar compromisso"}</h3>
         <button type="button" class="we-icon-btn" id="event-form-close">${WE.icon("close")}</button>
       </div>
+
+      <div class="we-wizard-steps">
+        <span class="we-step-dot active" data-dot="1"></span>
+        <span class="we-step-dot" data-dot="2"></span>
+        <span class="we-step-dot" data-dot="3"></span>
+      </div>
+      <p class="we-step-label" id="wizard-step-label">Passo 1 de 3 — ${STEP_LABELS[0]}</p>
+
       <div class="we-modal-body">
-        <label>Título
-          <input type="text" name="title" required placeholder="Ex: Consulta do João" value="${WE.escapeHtml(existingEvent?.title || "")}"/>
-        </label>
-
-        <label>Categoria
-          <select name="category">${categoryOptionsHtml(existingEvent?.category || "familia")}</select>
-        </label>
-
-        <label>Lembrete
-          <select name="reminder_minutes">
-            ${WE_REMINDER_OPTIONS.map(
-              (o) => `<option value="${o.value}" ${String(existingEvent?.reminder_minutes ?? "") === o.value ? "selected" : ""}>${o.label}</option>`
-            ).join("")}
-          </select>
-        </label>
-
-        <div class="we-form-row">
-          <label>Data
-            <input type="date" name="date" required value="${toLocalInputDate(start)}"/>
+        <!-- ===== Passo 1: o que e quando ===== -->
+        <div class="we-wizard-step active" data-step="1">
+          <label class="we-field">Título
+            <input type="text" name="title" placeholder="Ex: Consulta do João" value="${WE.escapeHtml(existingEvent?.title || "")}"/>
           </label>
-          <label class="we-checkbox-inline">
-            <input type="checkbox" name="all_day" id="all-day-check" ${existingEvent?.all_day ? "checked" : ""}/> Evento de dia inteiro
+
+          <div class="we-form-row">
+            <label class="we-field">Categoria
+              <select name="category">${categoryOptionsHtml(existingEvent?.category || "familia")}</select>
+            </label>
+            <label class="we-field">Lembrete
+              <select name="reminder_minutes">
+                ${WE_REMINDER_OPTIONS.map(
+                  (o) => `<option value="${o.value}" ${String(existingEvent?.reminder_minutes ?? "") === o.value ? "selected" : ""}>${o.label}</option>`
+                ).join("")}
+              </select>
+            </label>
+          </div>
+
+          <div class="we-switch-row">
+            <span>Evento de dia inteiro</span>
+            <label class="we-switch">
+              <input type="checkbox" name="all_day" id="all-day-check" ${existingEvent?.all_day ? "checked" : ""}/>
+              <span class="we-switch-track"></span>
+            </label>
+          </div>
+
+          <label class="we-field">Data
+            <input type="date" name="date" value="${toLocalInputDate(start)}"/>
           </label>
+
+          <div class="we-form-row" id="time-row" ${existingEvent?.all_day ? "hidden" : ""}>
+            <label class="we-field">Horário inicial
+              <input type="time" name="start_time" value="${toLocalInputTime(start)}"/>
+            </label>
+            <label class="we-field">Horário final
+              <input type="time" name="end_time" value="${toLocalInputTime(end)}"/>
+            </label>
+          </div>
+          <p class="we-form-error" id="wizard-step1-error" hidden></p>
         </div>
 
-        <div class="we-form-row" id="time-row" ${existingEvent?.all_day ? "hidden" : ""}>
-          <label>Horário inicial
-            <input type="time" name="start_time" value="${toLocalInputTime(start)}"/>
+        <!-- ===== Passo 2: onde ===== -->
+        <div class="we-wizard-step" data-step="2">
+          <label class="we-field we-autocomplete-wrap">Local
+            <div class="we-input-icon">
+              ${WE.icon("pin")}
+              <input type="text" name="location" id="location-input" autocomplete="off" placeholder="Buscar endereço..." value="${WE.escapeHtml(existingEvent?.location || "")}"/>
+            </div>
+            <div id="location-suggestions" class="we-suggestions" hidden></div>
           </label>
-          <label>Horário final
-            <input type="time" name="end_time" value="${toLocalInputTime(end)}"/>
-          </label>
-        </div>
-
-        <label class="we-autocomplete-wrap">Local
-          <input type="text" name="location" id="location-input" autocomplete="off" placeholder="Buscar endereço..." value="${WE.escapeHtml(existingEvent?.location || "")}"/>
-          <div id="location-suggestions" class="we-suggestions" hidden></div>
-        </label>
-        <div id="location-map-note" class="we-muted we-small" ${existingEvent?.latitude ? "" : "hidden"}>
-          📍 Localização selecionada — <a href="#" id="open-in-maps" target="_blank" rel="noopener">abrir no mapa</a>
-        </div>
-
-        <div class="we-field-block">
-          <p class="we-field-label">Participantes</p>
-          <div class="we-participant-select-list">
-            ${members
-              .map((m) => {
-                const prof = m.profiles;
-                const checked = selectedParticipants.has(prof.id);
-                return `
-                <div class="we-participant-row" data-user-id="${prof.id}">
-                  <label class="we-checkbox-inline">
-                    <input type="checkbox" class="participant-check" data-user-id="${prof.id}" ${checked ? "checked" : ""}/>
-                    ${WE.avatarHtml(prof, 28)} <span>${WE.escapeHtml(prof.name)}${prof.id===meId?" (você)":""} — ${WE.escapeHtml(prof.family_role_custom || prof.family_role || "")}</span>
-                  </label>
-                  <select class="participant-role-select" data-user-id="${prof.id}" ${checked ? "" : "disabled"}>
-                    ${WE_PARTICIPANT_ROLES.map((r) => `<option value="${r.value}" ${selectedParticipants.get(prof.id) === r.value ? "selected" : ""}>${r.label}</option>`).join("")}
-                  </select>
-                </div>`;
-              })
-              .join("")}
+          <div id="location-map-note" class="we-map-note" ${existingEvent?.latitude ? "" : "hidden"}>
+            📍 Localização selecionada — <a href="#" id="open-in-maps" target="_blank" rel="noopener">abrir no mapa</a>
           </div>
         </div>
 
-        <div id="conflict-warning" class="we-conflict-box" hidden></div>
+        <!-- ===== Passo 3: quem vai ===== -->
+        <div class="we-wizard-step" data-step="3">
+          <div class="we-field-block">
+            <p class="we-field-label">Participantes</p>
+            <div class="we-participant-select-list">
+              ${members
+                .map((m) => {
+                  const prof = m.profiles;
+                  const checked = selectedParticipants.has(prof.id);
+                  return `
+                  <div class="we-participant-row ${checked ? "checked" : ""}" data-user-id="${prof.id}">
+                    <input type="checkbox" class="participant-check" data-user-id="${prof.id}" ${checked ? "checked" : ""}/>
+                    ${WE.avatarHtml(prof, 34)}
+                    <div class="we-participant-info">
+                      <b>${WE.escapeHtml(prof.name)}${prof.id===meId?" (você)":""}</b>
+                      <small>${WE.escapeHtml(prof.family_role_custom || prof.family_role || "")}</small>
+                    </div>
+                    <select class="participant-role-select" data-user-id="${prof.id}" ${checked ? "" : "disabled"}>
+                      ${WE_PARTICIPANT_ROLES.map((r) => `<option value="${r.value}" ${selectedParticipants.get(prof.id) === r.value ? "selected" : ""}>${r.label}</option>`).join("")}
+                    </select>
+                  </div>`;
+                })
+                .join("")}
+            </div>
+          </div>
 
-        <label>Observações <span class="we-optional">(opcional)</span>
-          <textarea name="notes" rows="2" placeholder="Ex: Levar documentos e carteirinha.">${WE.escapeHtml(existingEvent?.notes || "")}</textarea>
-        </label>
+          <div id="conflict-warning" class="we-conflict-box" hidden></div>
 
-        <p class="we-form-error" id="event-form-error" hidden></p>
+          <label class="we-field">Observações <span class="we-optional">(opcional)</span>
+            <textarea name="notes" rows="2" placeholder="Ex: Levar documentos e carteirinha.">${WE.escapeHtml(existingEvent?.notes || "")}</textarea>
+          </label>
+
+          <p class="we-form-error" id="event-form-error" hidden></p>
+        </div>
       </div>
       <div class="we-modal-foot">
         <button type="button" class="we-btn we-btn-ghost" id="event-form-cancel">Cancelar</button>
-        <button type="submit" class="we-btn we-btn-primary" id="event-form-submit">${isEdit ? "Salvar alterações" : "Criar compromisso"}</button>
+        <button type="button" class="we-btn we-btn-ghost" id="wizard-back" hidden>Voltar</button>
+        <button type="button" class="we-btn we-btn-primary" id="wizard-next">Continuar</button>
+        <button type="submit" class="we-btn we-btn-primary" id="event-form-submit" hidden>${isEdit ? "Salvar alterações" : "Criar compromisso"}</button>
       </div>
     </form>
   `;
@@ -135,9 +165,73 @@ WE.views.openEventForm = async (existingEvent) => {
     chk.addEventListener("change", () => {
       const sel = WE.el(`.participant-role-select[data-user-id="${chk.dataset.userId}"]`);
       sel.disabled = !chk.checked;
+      WE.el(`.we-participant-row[data-user-id="${chk.dataset.userId}"]`).classList.toggle("checked", chk.checked);
       scheduleConflictCheck();
     });
   });
+
+  // ---------------------------------------------------------
+  // Navegação do assistente em passos (1 O que/quando · 2 Onde · 3 Quem vai)
+  // ---------------------------------------------------------
+  const STEP_LABELS_NAV = ["O que e quando", "Onde", "Quem vai"];
+  const TOTAL_STEPS = 3;
+  let currentStep = 1;
+
+  function renderStep() {
+    WE.els(".we-wizard-step").forEach((el) => el.classList.toggle("active", Number(el.dataset.step) === currentStep));
+    WE.els(".we-step-dot").forEach((el) => el.classList.toggle("active", Number(el.dataset.dot) === currentStep));
+    WE.el("#wizard-step-label").textContent = `Passo ${currentStep} de ${TOTAL_STEPS} — ${STEP_LABELS_NAV[currentStep - 1]}`;
+    WE.el("#wizard-back").hidden = currentStep === 1;
+    const isLast = currentStep === TOTAL_STEPS;
+    WE.el("#wizard-next").hidden = isLast;
+    WE.el("#event-form-submit").hidden = !isLast;
+  }
+
+  function validateStep1() {
+    const errEl = WE.el("#wizard-step1-error");
+    const title = WE.el('input[name="title"]').value.trim();
+    const date = WE.el('input[name="date"]').value;
+    if (!title) {
+      errEl.textContent = "Dê um título para o compromisso.";
+      errEl.hidden = false;
+      return false;
+    }
+    if (!date) {
+      errEl.textContent = "Escolha a data do compromisso.";
+      errEl.hidden = false;
+      return false;
+    }
+    const { startD, endD } = getFormDatetimes();
+    if (isNaN(startD) || isNaN(endD) || startD >= endD) {
+      errEl.textContent = "Verifique os horários — o final precisa vir depois do início.";
+      errEl.hidden = false;
+      return false;
+    }
+    errEl.hidden = true;
+    return true;
+  }
+
+  WE.el("#wizard-next").addEventListener("click", () => {
+    if (currentStep === 1 && !validateStep1()) return;
+    if (currentStep < TOTAL_STEPS) {
+      currentStep++;
+      renderStep();
+    }
+  });
+  WE.el("#wizard-back").addEventListener("click", () => {
+    if (currentStep > 1) {
+      currentStep--;
+      renderStep();
+    }
+  });
+  // Enter em qualquer campo avança o passo em vez de submeter o formulário direto
+  WE.el("#event-form").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.tagName !== "TEXTAREA" && currentStep < TOTAL_STEPS) {
+      e.preventDefault();
+      WE.el("#wizard-next").click();
+    }
+  });
+  renderStep();
 
   // Location autocomplete (Nominatim / OpenStreetMap — gratuito)
   const locInput = WE.el("#location-input");
@@ -266,10 +360,17 @@ WE.views.openEventForm = async (existingEvent) => {
     const errEl = WE.el("#event-form-error");
     errEl.hidden = true;
     const fd = new FormData(e.target);
+    if (!fd.get("title").trim()) {
+      currentStep = 1;
+      renderStep();
+      validateStep1();
+      return;
+    }
     const { startD, endD } = getFormDatetimes();
     if (isNaN(startD) || isNaN(endD) || startD >= endD) {
-      errEl.textContent = "Verifique a data e os horários informados.";
-      errEl.hidden = false;
+      currentStep = 1;
+      renderStep();
+      validateStep1();
       return;
     }
     const participants = getSelectedParticipants();

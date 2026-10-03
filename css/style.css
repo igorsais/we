@@ -134,6 +134,47 @@ input, select, textarea { font-family: inherit; }
 .we-checkbox-inline { display: flex !important; flex-direction: row !important; align-items: center; gap: 8px; font-weight: 400 !important; color: var(--text) !important; }
 .we-checkbox-inline input { width: auto; }
 
+/* ---------------- Formulário de compromisso (assistente em passos) ---------------- */
+.we-event-form .we-modal-body { gap: 18px; padding: 16px 24px 4px; }
+.we-event-form input, .we-event-form select, .we-event-form textarea { padding: 13px 16px; font-size: 15px; }
+.we-event-form .we-form-row { gap: 14px; }
+
+.we-wizard-steps { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 24px 2px; }
+.we-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all .2s ease; }
+.we-step-dot.active { background: var(--pink); width: 22px; border-radius: 5px; }
+.we-step-label { text-align: center; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 6px 0 2px; margin: 0; }
+.we-wizard-step { display: none; flex-direction: column; gap: 14px; }
+.we-wizard-step.active { display: flex; }
+
+.we-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--off-white); border-radius: 14px; padding: 13px 16px; }
+.we-switch-row span { font-size: 13.5px; font-weight: 600; color: var(--plum); }
+.we-switch { position: relative; width: 42px; height: 25px; flex: none; }
+.we-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.we-switch-track { position: absolute; inset: 0; background: var(--border); border-radius: 999px; transition: background .15s ease; pointer-events: none; }
+.we-switch-track::before { content: ""; position: absolute; width: 19px; height: 19px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .15s ease; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.we-switch input:checked + .we-switch-track { background: var(--pink); }
+.we-switch input:checked + .we-switch-track::before { transform: translateX(17px); }
+
+.we-input-icon { position: relative; }
+.we-input-icon .we-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--muted); pointer-events: none; }
+.we-input-icon input { padding-left: 40px !important; }
+
+.we-map-note { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.we-map-note a { color: var(--purple); font-weight: 600; }
+
+.we-field-block { border-top: none; padding-top: 0; }
+.we-participant-select-list { display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding: 2px; }
+.we-participant-row { display: flex; align-items: center; gap: 12px; background: var(--off-white); border-radius: 14px; padding: 10px 14px; border: 1.5px solid transparent; transition: border-color .15s ease; }
+.we-participant-row.checked { border-color: var(--pink); }
+.we-participant-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--pink); flex: none; margin: 0; }
+.we-participant-info { flex: 1; min-width: 0; }
+.we-participant-info b { display: block; font-size: 13.5px; font-weight: 600; color: var(--text); }
+.we-participant-info small { color: var(--muted); font-size: 12px; }
+.we-participant-row select { width: auto; border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; font-size: 12.5px; }
+
+.we-suggestions { max-height: 240px; }
+.we-suggestion-item { display: flex; align-items: center; gap: 8px; }
+
 .we-onboard-steps { display: flex; justify-content: center; gap: 6px; margin: 10px 0 18px; }
 .we-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
 .we-step-dot.done, .we-step-dot.current { background: var(--pink); }
@@ -281,7 +322,7 @@ input, select, textarea { font-family: inherit; }
 .we-modal-wide { max-width: 600px; }
 .we-modal-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px 8px; position: sticky; top: 0; background: #fff; }
 .we-modal-body { padding: 12px 22px 4px; display: flex; flex-direction: column; gap: 14px; }
-.we-modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 22px 22px; }
+.we-modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 22px 22px; flex-wrap: wrap; }
 .we-modal-foot-wrap { flex-wrap: wrap; }
 
 .we-detail-row { font-size: 14.5px; }
