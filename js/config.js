@@ -45,6 +45,12 @@ window.WE_FAMILY_ROLES = [
 ];
 
 // ---------------------------------------------------------
+// Gênero — define o esquema de cores do app pra essa pessoa
+// (ver WE.applyGenderTheme em js/utils.js).
+// ---------------------------------------------------------
+window.WE_GENDER_OPTIONS = ["Feminino", "Masculino", "Prefiro não dizer"];
+
+// ---------------------------------------------------------
 // Papéis do participante em um evento
 // ---------------------------------------------------------
 window.WE_PARTICIPANT_ROLES = [

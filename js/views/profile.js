@@ -34,8 +34,11 @@ WE.views.profilePage = async (content) => {
               ${WE_FAMILY_ROLES.map((r) => `<option value="${r}" ${p.family_role === r ? "selected" : ""}>${r}</option>`).join("")}
             </select>
           </label>
-          <label id="edit-custom-role-label" ${p.family_role === "Outro" ? "" : "hidden"}>Relação personalizada
-            <input type="text" name="family_role_custom" value="${WE.escapeHtml(p.family_role_custom || "")}"/>
+          <label>Gênero
+            <select name="gender">
+              <option value="">Selecione</option>
+              ${WE_GENDER_OPTIONS.map((g) => `<option value="${g}" ${p.gender === g ? "selected" : ""}>${g}</option>`).join("")}
+            </select>
           </label>
           <p class="we-form-error" id="profile-edit-error" hidden></p>
           <button type="submit" class="we-btn we-btn-primary" id="profile-edit-submit">Salvar alterações</button>
@@ -79,10 +82,6 @@ WE.views.profilePage = async (content) => {
     reader.readAsDataURL(file);
   });
 
-  WE.el("#edit-family-role").addEventListener("change", (e) => {
-    WE.el("#edit-custom-role-label").hidden = e.target.value !== "Outro";
-  });
-
   WE.el("#profile-edit-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = WE.el("#profile-edit-submit");
@@ -98,9 +97,11 @@ WE.views.profilePage = async (content) => {
         phone: fd.get("phone").trim(),
         birth_date: fd.get("birth_date") || null,
         family_role: fd.get("family_role"),
-        family_role_custom: fd.get("family_role") === "Outro" ? fd.get("family_role_custom").trim() : null,
+        family_role_custom: null,
+        gender: fd.get("gender") || null,
         avatar_url,
       });
+      WE.applyGenderTheme(WE.state.profile);
       WE.refreshTopbarUser();
       WE.toast("Perfil atualizado!", "success");
     } catch (err) {

@@ -115,6 +115,7 @@ WE.router = async () => {
       WE.state.profile = await WE.api.getMyProfile();
     } catch (e) {}
   }
+  WE.applyGenderTheme(WE.state.profile);
 
   if (path === "#/perfil-inicial") return WE.views.profileSetup();
 

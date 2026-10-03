@@ -3,6 +3,15 @@
 // =========================================================
 const WE = (window.WE = window.WE || {});
 
+// Troca o esquema de cores do app (rosa/vinho ou azul) de acordo com o
+// gênero salvo no perfil da pessoa logada. Chamado sempre que o perfil é
+// carregado ou salvo (router.js, onboarding.js, profile.js). Ver o bloco
+// [data-theme="masculino"] em css/style.css.
+WE.applyGenderTheme = (profile) => {
+  const theme = profile?.gender === "Masculino" ? "masculino" : "feminino";
+  document.documentElement.setAttribute("data-theme", theme);
+};
+
 WE.el = (sel, root) => (root || document).querySelector(sel);
 WE.els = (sel, root) => Array.from((root || document).querySelectorAll(sel));
 

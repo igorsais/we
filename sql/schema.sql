@@ -20,6 +20,7 @@ create table if not exists public.profiles (
   avatar_color text,
   family_role text,
   family_role_custom text,
+  gender text,
   created_at timestamptz not null default now()
 );
 

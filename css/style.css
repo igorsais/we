@@ -15,6 +15,25 @@
   --shadow-sm: 0 2px 10px rgba(76, 20, 72, 0.06);
 }
 
+/* ---------------- Tema alternativo (perfil marcado como "Masculino") ----------------
+   Troca a paleta rosa/vinho por azul claro/royal. Ativado via atributo
+   data-theme="masculino" na tag <html> — ver WE.applyGenderTheme em js/utils.js. */
+:root[data-theme="masculino"] {
+  --plum: #0F2E5C;
+  --purple: #1C5FC7;
+  --pink: #4FA3F7;
+  --light-pink: #8FD3FE;
+  --blue: #1C5FC7;
+  --shadow: 0 6px 24px rgba(15, 46, 92, 0.08);
+  --shadow-sm: 0 2px 10px rgba(15, 46, 92, 0.06);
+}
+:root[data-theme="masculino"] .we-btn-primary:hover { box-shadow: 0 6px 18px rgba(79, 163, 247, .35); }
+:root[data-theme="masculino"] .we-form input:focus,
+:root[data-theme="masculino"] .we-form select:focus,
+:root[data-theme="masculino"] .we-form textarea:focus { box-shadow: 0 0 0 3px rgba(28, 95, 199, .10); }
+:root[data-theme="masculino"] .we-nav-link.active { background: linear-gradient(135deg, rgba(15,46,92,.08), rgba(79,163,247,.10)); }
+:root[data-theme="masculino"] .we-notif-item.unread { background: rgba(79, 163, 247, .08); }
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {

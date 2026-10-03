@@ -42,8 +42,11 @@ WE.views.profileSetup = () => {
             ${WE_FAMILY_ROLES.map((r) => `<option value="${r}" ${p.family_role === r ? "selected" : ""}>${r}</option>`).join("")}
           </select>
         </label>
-        <label id="custom-role-label" ${p.family_role === "Outro" ? "" : "hidden"}>Como podemos chamar essa relação?
-          <input type="text" name="family_role_custom" value="${WE.escapeHtml(p.family_role_custom || "")}" placeholder="Ex: Madrinha"/>
+        <label>Gênero
+          <select name="gender" id="gender-select">
+            <option value="">Selecione</option>
+            ${WE_GENDER_OPTIONS.map((g) => `<option value="${g}" ${p.gender === g ? "selected" : ""}>${g}</option>`).join("")}
+          </select>
         </label>
         <p class="we-form-error" id="profile-error" hidden></p>
         <button type="submit" class="we-btn we-btn-primary we-btn-block" id="profile-submit">Continuar</button>
@@ -63,10 +66,6 @@ WE.views.profileSetup = () => {
     reader.readAsDataURL(file);
   });
 
-  WE.el("#family-role-select").addEventListener("change", (e) => {
-    WE.el("#custom-role-label").hidden = e.target.value !== "Outro";
-  });
-
   WE.el("#profile-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = WE.el("#profile-submit");
@@ -84,10 +83,12 @@ WE.views.profileSetup = () => {
         phone: fd.get("phone").trim(),
         birth_date: fd.get("birth_date") || null,
         family_role: fd.get("family_role"),
-        family_role_custom: fd.get("family_role") === "Outro" ? fd.get("family_role_custom").trim() : null,
+        family_role_custom: null,
+        gender: fd.get("gender") || null,
         avatar_url,
       };
       WE.state.profile = await WE.api.upsertProfile(fields);
+      WE.applyGenderTheme(WE.state.profile);
       // Importante: navega pra "#/hoje" (não direto pra "#/criar-familia").
       // É o router (js/router.js) quem decide pra onde ir depois do perfil:
       // primeiro ele tenta consumir um convite pendente (localStorage ou por
