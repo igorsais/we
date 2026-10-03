@@ -106,8 +106,8 @@ window.WE_PUSH_FUNCTION_NAME = "send-reminder-push";
 // convite continua sendo criado normalmente, só o email não é enviado.
 // ---------------------------------------------------------
 window.WE_EMAILJS = {
-  PUBLIC_KEY: "",
-  SERVICE_ID: "",
-  TEMPLATE_ID: "",
+  PUBLIC_KEY: "IPvUgSMz8wSadpjb0",
+  SERVICE_ID: "service_wg6t2vf",
+  TEMPLATE_ID: "template_1o0aw59",
 };
 window.WE_EMAILJS_READY = !!(window.WE_EMAILJS.PUBLIC_KEY && window.WE_EMAILJS.SERVICE_ID && window.WE_EMAILJS.TEMPLATE_ID);
